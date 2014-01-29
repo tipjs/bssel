@@ -28,7 +28,7 @@
 			<li>sec-div2-ul-li
 				<div>sec-div2-ul-li-div
 					<ul>
-						<li disabled>sec-div2-ul-li-div-ul-li</li>
+						<li disabled data-id='aaa'>sec-div2-ul-li-div-ul-li</li>
 					</ul>
 				</div>
 			</li>
@@ -39,7 +39,8 @@
 			<li>sec-div3-ul-li
 				<div id='testid'>sec-div3-ul-li-div
 					<ul>
-						<li class='testid'>sec-div3-ul-li-div-ul-li</li>
+						<li class='testid' data-id='aaa'>sec-div3-ul-li-div-ul-li1</li>
+						<li class='testid'>sec-div3-ul-li-div-ul-li2</li>
 					</ul>
 				</div>
 			</li>
@@ -58,7 +59,8 @@
 <script src="./selector.js" type></script>
 <script>
 //bssel('li[disabled], input[type], :checked[type][type]');
-bssel('.testid, #testid');
+bssel('     .abc        .testid[data-id]');
+//bssel('section');
 </script>
 
 </body>

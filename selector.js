@@ -128,160 +128,139 @@ var DETECT;
 })();
 
 var finder = (function(){
-	var bsel, pasAttrPseudo;
+	var bsel, pasSel, pasAttrPseudo, r0;
 
-	pasAttrPseudo = function(s){
-		var attrs, pseudos, p, a, i, j, k, ty;
-		attrs = [], pseudos = [],
-		i = 0, j = s.length;
-		while( i < j ){
-			if( s.charAt(i) == ':' ){
-				if( ty == 1 ) pseudos.push(k);
-				else if( ty == 2 ) attrs.push(k);
-				k = '', ty = 1;
-			}else if( s.charAt(i) == '[' ){
-				if( ty == 1 ) pseudos.push(k);
-				else if( ty == 2 ) attrs.push(k);
-				k = '', ty = 2;
-			}else if( s.charAt(i) == ']' ){
-				//if( ty != 2 ) throw new Error('syntax error');
-				if( (j-1) == i )
-					if( ty == 1 ) pseudos.push(k);
-					else if( ty == 2 ) attrs.push(k);
-			}else{
-				k += s.charAt(i);
-				if( (j-1) == i )
-					if( ty == 1 ) pseudos.push(k);
-					else if( ty == 2 ) attrs.push(k);
+	r0 = /  +/g;
+	pasSel = function(s){
+		var sels, token, step, key, i, j;
+		sels = [];
+		token = '';
+		i = s.length;
+		while( i-- ){
+			key = s.charAt(i);
+			token = key + token;
+			if( key == ' ' || key == '.' || key == '>' || !i ){
+				sels.push(token);
+				token = '';
 			}
-			i++;
 		}
-		return [ uniqArray( trim( attrs ) ), uniqArray( trim( pseudos ) ) ];
+		console.log(sels);
+		return sels;
+	},
+	pasAttrPseudo = function(s){
+		var sels, key, token, p, a, i, j, k, ty;
+		sels = [], token = '',
+		i = s.length;
+		while( i-- ){
+			key = s.charAt(i);
+			if( key != ']' ) token = key + token;
+			if( key == ' ' || key == ':' || key == '[' || !i ){
+				sels.push(token);
+				token = '';
+			}
+		}
+		console.log(sels);
+		return sels;
 	};
 	return function($s){
-		var ret, el, els, sel, sels, oSel, i, j, k, l, m, n,
-			key, hit, pIdx, aIdx, attrs, pseudos;
+		var ret, el, els, sel, sels, oSel, t0, i, j, k, l, m, n,
+			key, hit, pIdx, aIdx, attrs;
 
+		if(isQS) console.log( document.querySelectorAll($s) );
 		oSel = [],
-		sels = trim( $s.split(',') );
-		for( i = 0, j = sels.length; i < j; i++ ){
+		sels = trim( $s.replace( r0, ' ' ).split(',') );
+		for( i = sels.length; i--; ){
 			sel = sels[i];
 			pIdx = sel.indexOf(":");
 			aIdx = sel.indexOf("[");
 			if( aIdx > -1 && pIdx > -1 ){
 				//console.log('#aIdx & pIdx');
 				attrs = pasAttrPseudo( aIdx > pIdx ? sel.substr(pIdx):sel.substr(aIdx) );
-				pseudos = attrs[1];
-				attrs = attrs[0];
 				sel = aIdx > pIdx ? sel.substr( 0, pIdx ):sel.substr( 0, aIdx );
 			}else if( aIdx > -1 ){
 				//console.log('#aIdx');
 				attrs = pasAttrPseudo( sel.substr(aIdx) );
-				pseudos = attrs[1];
-				attrs = attrs[0];
 				sel = sel.substr( 0, aIdx );
 			}else if( pIdx > -1 ){
 				//console.log('#pIdx');
 				attrs = pasAttrPseudo( sel.substr(pIdx) );
-				pseudos = attrs[1];
-				attrs = attrs[0];
 				sel = sel.substr( 0, pIdx );
 			}else{
 				//console.log('#none');
 				sel = sel;
-				attrs = [], pseudos = [];
+				attrs = [];
 			}
 			oSel.push({
-				sel:sel,
-				attrs:attrs,
-				pseudos:pseudos
+				sel : sel,
+				sels : pasSel(sel),
+				attrs : attrs
 			});
-			//console.log('E :',sel);
 		}
-		console.log(oSel);
+		//console.log(oSel);
 		ret = [];
 		if( els = document.getElementsByTagName('*') ){
-			console.log(els);
+			//console.log(els);
 			for( i = 0, j = els.length; i < j; i++ ){
 				el = els[i];
-				hit = 0;
-				for( k = 0, l = oSel.length; k < l; k++ ){
-					sel = oSel[k].sel;
-					key = sel.charAt(0);
+				hit = [];
+				for( k = oSel.length; k--; ){
+					sel = oSel[k].sel,
+					key = sel.charAt(0),
+					attrs = oSel[k].attrs;
 					//console.log(key);
 					if( key == '#' ){
 						//console.log("ID");
-						if( el.id == sel.substr(1) ){
-							hit = 1;break;
+						if( el.id == sel.substr(1) && !attrs.length ){
+							hit.push(1);break;
 						}else{
-							attrs = oSel[k].attrs;
+							// TODO:ID combination 처리
 							for( m = attrs.length; m--; ){
-								if( el.getAttribute(attrs[m]) !== null ){
-									hit = 1;break;
+								t0 = attrs[m];
+								if( t0.charAt(0) == '[' && el.getAttribute( t0.substr(1) ) !== null ){
+									hit.push(1);
 								}
 							}
-							pseudos = oSel[k].pseudos;
-							for( m = pseudos.length; m--; ){
-								
-							}
-							if(hit) break;
 						}
 					}else if( key == '.' ){
-						if( el.className == sel.substr(1) ){
-							hit = 1;break;
+						if( el.className == sel.substr(1) && !attrs.length ){
+							hit.push(1);break;
 						}else{
-							attrs = oSel[k].attrs;
+							// TODO:class combination 처리
 							for( m = attrs.length; m--; ){
-								if( el.getAttribute(attrs[m]) !== null ){
-									hit = 1;break;
+								t0 = attrs[m];
+								if( t0.charAt(0) == '[' && el.getAttribute( t0.substr(1) ) !== null ){
+									hit.push(1);
 								}
 							}
-							pseudos = oSel[k].pseudos;
-							for( m = pseudos.length; m--; ){
-								
-							}
-							if(hit) break;
 						}
 					}else if( key == '' ){
 						// TODO:IE7 에서 A, SCRIPT, UL, LI 등의 요소에 기본 type 속성이 생성되어있는 문제 처리
-						attrs = oSel[k].attrs;
 						for( m = attrs.length; m--; ){
-							if( el.getAttribute(attrs[m]) !== null ){
-								console.log(el.tagName)
-								hit = 1;break;
+							t0 = attrs[m];
+							if( t0.charAt(0) == '[' && el.getAttribute( t0.substr(1) ) !== null ){
+								hit.push(1);
 							}
 						}
-						pseudos = oSel[k].pseudos;
-						for( m = pseudos.length; m--; ){
-							
-						}
-						if(hit) break;
 					}else{
-						attrs = oSel[k].attrs;
-						pseudos = oSel[k].pseudos;
-						sel = sel.toUpperCase();
-						if( el.tagName == sel && !attrs.length && !pseudos.length ){
-							console.log('TAG1')
-							hit = 1;break;
-						}else if( el.tagName == sel && ( attrs.length || pseudos.length ) ){
+						if( el.tagName == sel.toUpperCase() && !attrs.length ){
+							hit.push(1);break;
+						}else{
 							console.log('TAG2')
 							for( m = attrs.length; m--; ){
-								if( el.getAttribute(attrs[m]) !== null ){
-									hit = 1;break;
+								t0 = attrs[m];
+								if( t0.charAt(0) == '[' && el.getAttribute( t0.substr(1) ) !== null ){
+									hit.push(1);
 								}
 							}
-							for( m = pseudos.length; m--; ){
-								
-							}
-							if(hit) break;
 						}
 					}
 				}
-				if(hit) ret.push(el);
+				//console.log(hit.length, attrs.length)
+				if( hit.length && hit.length >= attrs.length ) ret.push(el);
 			}
 		}
 		//echo(ret[0]);
-		console.log(ret.length);
+		console.dir(ret);
 	}
 })();
 	return finder;
@@ -299,9 +278,19 @@ var finder = (function(){
 
 
 
-
-
-
-
-
+//
+//function querySelectorAll(element, selector) {
+//    if(element.querySelectorAll) { // Morden Browser
+//        return element.querySelectorAll(selector);
+//    }
+//    else { // low versioning IE only
+//        var a=element.all, c=[], selector = selector.replace(/\[for\b/gi, '[htmlFor').split(','), i, j, s=document.createStyleSheet();
+//        for (i=selector.length; i--;) {
+//            s.addRule(selector[i], 'k:v');
+//            for (j=a.length; j--;) a[j].currentStyle.k && c.push(a[j]);
+//            s.removeRule(0);
+//        }
+//        return c;
+//    }
+//}
 
