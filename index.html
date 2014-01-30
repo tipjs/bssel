@@ -35,9 +35,9 @@
 		</ul>
 	</div>
 	<div>sec-div3
-		<ul>
+		<ul class='testid'>
 			<li>sec-div3-ul-li
-				<div id='testid'>sec-div3-ul-li-div
+				<div id='testid' data-id='aaa'>sec-div3-ul-li-div
 					<ul>
 						<li class='testid' data-id='aaa'>sec-div3-ul-li-div-ul-li1</li>
 						<li class='testid'>sec-div3-ul-li-div-ul-li2</li>
@@ -59,7 +59,8 @@
 <script src="./selector.js" type></script>
 <script>
 //bssel('li[disabled], input[type], :checked[type][type]');
-bssel(' .abc .testid [data-id],  .abc .testid [data-id]');
+//bssel('.testid>[data-id]');
+bssel('.testid>[data-id]');
 //bssel('[data-id] form[data-id]:checked');
 </script>
 

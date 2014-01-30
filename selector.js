@@ -128,7 +128,7 @@ var DETECT;
 })();
 
 var finder = (function(){
-	var bsel, pasQuery, pasSel, pasAttrPseudo, r0;
+	var bsel, pasQuery, compareEl, r0;
 
 	r0 = /  +/g;
 	pasQuery = function(s){
@@ -146,10 +146,34 @@ var finder = (function(){
 		}
 		console.log(tokens);
 		return tokens;
+	},
+	compareEl = function(el, token){
+		var key;
+		if( ( key = token.charAt(0) ) == '#' ){
+			//console.log("ID");
+			key = token.substr(1);
+			if( key == el.id ) return 1;
+		}else if( key == '.' ){
+			//console.log('#class');
+			key = token.substr(1);
+			if( key == el.className ) return 1;
+		}else if( key == '[' ){
+			//console.log('#attr');
+			// TODO:IE7 에서 A, SCRIPT, UL, LI 등의 요소에 기본 type 속성이 생성되어있는 문제 처리
+			key = token.substr(1);
+			if( el.getAttribute(key) !== null ) return 1;
+		}else if( key == ':' ){
+			// TODO:pseudo 처리
+			
+			
+		}else{ // TAG 처리
+			if( token.toUpperCase() == el.tagName ) return 1;
+		}
+		return 0;
 	};
 	return function($s){
-		var ret, el, els, sel, sels, oSel, t0, i, j, k, m, n,
-			key, hit, pIdx, aIdx, attrs, token, tokens;
+		var ret, el, els, pel, sel, sels, oSel, t0, i, j, k, m, n,
+			key, hit, pIdx, aIdx, attrs, token, tokens, ntoken;
 
 		if(isQS) console.log( document.querySelectorAll($s) );
 		oSel = [],
@@ -157,37 +181,38 @@ var finder = (function(){
 		for( i = sels.length; i--; ){
 			oSel.push( pasQuery( sels[i] ) );
 		}
-		console.log(oSel);
+		//console.log(oSel);
 		// TODO:native 처리
 		ret = [];
 		if( els = document.getElementsByTagName('*') ){
 			//console.log(els);
 			for( i = 0, j = els.length; i < j; i++ ){
-				el = els[i];
-				hit = [];
+				hit = 0;
+				pel = null;
 				for( k = oSel.length; k--; ){
 					tokens = oSel[k];
+					el = els[i];
 					for( m = 0, n = tokens.length; m < n; m++ ){
 						token = tokens[m];
 						key = token.charAt(0);
-						console.log(key);
-						if( key == '#' ){
-							//console.log("ID");
-							// TODO:ID combination 처리
-							
-						}else if( key == '.' ){
-							// TODO:class combination 처리
-							
-						}else if( key == '' ){
-							// TODO:IE7 에서 A, SCRIPT, UL, LI 등의 요소에 기본 type 속성이 생성되어있는 문제 처리
-							
-						}else{ // TAG 처리
-							
+						if( ( key = token.charAt(0) ) == ' ' ){ // loop parent
+							m++;
+							while( ( el = el.parentNode ) ){
+								if( hit = compareEl(el, tokens[m]) ) break;
+							}
+						}else if( key == '>' ){ // immediate parent
+							m++;
+							hit = compareEl(el.parentNode, tokens[m]);
+						}else{
+							hit = compareEl(el, token);
 						}
+						if( !hit ) break; // 여긴 AND 연산
+						//console.log(key);
 					}
+					if( hit ) break; // 여긴 OR 연산
 				}
 				//console.log(hit.length, attrs.length)
-				if( hit.length && hit.length >= attrs.length ) ret.push(el);
+				if( hit ) ret.push(els[i]);
 			}
 		}
 		//echo(ret[0]);
