@@ -128,10 +128,10 @@ var DETECT;
 })();
 
 var finder = (function(){
-	var bsel, pasQuery, compareEl, r0;
+	var bsel, parseQuery, compareEl, r0;
 
 	r0 = /  +/g;
-	pasQuery = function(s){
+	parseQuery = function(s){
 		var tokens, token, step, key, i, j;
 		tokens = [];
 		token = '';
@@ -179,7 +179,7 @@ var finder = (function(){
 		oSel = [],
 		sels = trim( $s.replace( r0, ' ' ).split(',') );
 		for( i = sels.length; i--; ){
-			oSel.push( pasQuery( sels[i] ) );
+			oSel.push( parseQuery( sels[i] ) );
 		}
 		//console.log(oSel);
 		// TODO:native 처리
