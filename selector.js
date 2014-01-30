@@ -151,30 +151,47 @@ var finder = (function(){
 		console.log(tokens);
 		return tokens;
 	},
-	compareEl = function(el, token){
-		var key;
-		if( ( key = token.charAt(0) ) == '#' ){
-			//console.log("ID");
-			key = token.substr(1);
-			if( key == el.id ) return 1;
-		}else if( key == '.' ){
-			//console.log('#class');
-			key = token.substr(1);
-			if( key == el.className ) return 1;
-		}else if( key == '[' ){
-			//console.log('#attr');
-			// TODO:IE7 에서 A, SCRIPT, UL, LI 등의 요소에 기본 type 속성이 생성되어있는 문제 처리
-			key = token.substr(1);
-			if( el.getAttribute(key) !== null ) return 1;
-		}else if( key == ':' ){
-			// TODO:pseudo 처리
-			
-			
-		}else{ // TAG 처리
-			if( token.toUpperCase() == el.tagName ) return 1;
-		}
-		return 0;
-	};
+	compareEl = (function(){
+		function _hasCls(key, clsNm){
+			var i;
+			if( !clsNm ) return 0;
+			clsNm = trim( clsNm.split(' ') );
+			for( i = clsNm.length; i--; )	if( key == clsNm[i] ) return 1;
+			return 0;
+		};
+		return function(el, token){
+			var key;
+			if( ( key = token.charAt(0) ) == '#' ){
+				//console.log("ID");
+				key = token.substr(1);
+				if( key == el.id ) return 1;
+			}else if( key == '.' ){
+				//console.log('#class');
+				key = token.substr(1);
+				return _hasCls( key, el.className );
+			}else if( key == '[' ){
+				//console.log('#attr');
+				// TODO:IE7 에서 A, SCRIPT, UL, LI 등의 요소에 기본 type 속성이 생성되어있는 문제 처리
+				key = token.substr(1);
+				if( el.getAttribute(key) !== null ) return 1;
+			}else if( key == ':' ){
+				// TODO:pseudo 처리
+				key = token.substr(1);
+				switch(key){
+				case'link':
+					if( el.tagName == 'A' && el.getAttribute('href') !== null ) return 1;
+					break;
+				case'active':
+				case'visited':
+				case'first-line':
+				case'first-letter':break;
+				}
+			}else{ // TAG 처리
+				if( token.toUpperCase() == el.tagName ) return 1;
+			}
+			return 0;
+		};
+	})();
 	return function($s){
 		var ret, el, els, pel, sel, sels, oSel, t0, i, j, k, m, n,
 			key, hit, pIdx, aIdx, attrs, token, tokens, ntoken;
