@@ -185,6 +185,15 @@ var finder = (function(){
 				case'visited':
 				case'first-line':
 				case'first-letter':break;
+				case'first-child':
+					return el.childNodes[0];
+					break;
+				case'hover':
+					// TODO;
+					break;
+				case'focus':
+					// TODO;
+					break;
 				}
 			}else{ // TAG 처리
 				if( token == '*' || token.toUpperCase() == el.tagName ) return 1;
