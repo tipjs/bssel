@@ -138,12 +138,12 @@ var finder = (function(){
 		i = s.length;
 		while( i-- ){
 			key = s.charAt(i);
-			if( key != ']' ) token = key + token;
-			if( key == ' ' ){
+			if( key != ']' && key != '>' ) token = key + token;
+			if( key == ' ' || key == '>' ){
 				if( ( token = trim(token) ) != '' ) tokens.push(token);
 				tokens.push(key);
 				token = '';
-			}else if( key == '.' || key == '>' || key == ':' || key == '[' || !i ){
+			}else if( key == '.' || key == ':' || key == '[' || !i ){
 				tokens.push(token);
 				token = '';
 			}
@@ -223,7 +223,7 @@ var finder = (function(){
 							}
 						}else if( key == '>' ){ // immediate parent
 							m++;
-							hit = compareEl(el.parentNode, tokens[m]);
+							hit = compareEl(el = el.parentNode, tokens[m]);
 						}else{
 							hit = compareEl(el, token);
 						}
