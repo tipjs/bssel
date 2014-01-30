@@ -187,7 +187,7 @@ var finder = (function(){
 				case'first-letter':break;
 				}
 			}else{ // TAG 처리
-				if( token.toUpperCase() == el.tagName ) return 1;
+				if( token == '*' || token.toUpperCase() == el.tagName ) return 1;
 			}
 			return 0;
 		};
