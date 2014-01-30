@@ -140,7 +140,7 @@ var finder = (function(){
 			key = s.charAt(i);
 			if( key != ']' ) token = key + token;
 			if( key == ' ' ){
-				tokens.push(trim(token));
+				if( ( token = trim(token) ) != '' ) tokens.push(token);
 				tokens.push(key);
 				token = '';
 			}else if( key == '.' || key == '>' || key == ':' || key == '[' || !i ){
