@@ -139,7 +139,11 @@ var finder = (function(){
 		while( i-- ){
 			key = s.charAt(i);
 			if( key != ']' ) token = key + token;
-			if( key == ' ' || key == '.' || key == '>' || key == ':' || key == '[' || !i ){
+			if( key == ' ' ){
+				tokens.push(trim(token));
+				tokens.push(key);
+				token = '';
+			}else if( key == '.' || key == '>' || key == ':' || key == '[' || !i ){
 				tokens.push(token);
 				token = '';
 			}
@@ -174,7 +178,7 @@ var finder = (function(){
 	return function($s){
 		var ret, el, els, pel, sel, sels, oSel, t0, i, j, k, m, n,
 			key, hit, pIdx, aIdx, attrs, token, tokens, ntoken;
-
+		console.log('@@@', $s)
 		if(isQS) console.log( document.querySelectorAll($s) );
 		oSel = [],
 		sels = trim( $s.replace( r0, ' ' ).split(',') );
@@ -197,7 +201,7 @@ var finder = (function(){
 						key = token.charAt(0);
 						if( ( key = token.charAt(0) ) == ' ' ){ // loop parent
 							m++;
-							while( ( el = el.parentNode ) ){
+							while( el = el.parentNode ){
 								if( hit = compareEl(el, tokens[m]) ) break;
 							}
 						}else if( key == '>' ){ // immediate parent
